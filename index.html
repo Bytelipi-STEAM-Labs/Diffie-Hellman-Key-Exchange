@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffie-Hellman Key Exchange Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .color-box {
+            width: 100%;
+            height: 100px;
+            border-radius: 0.5rem;
+            transition: background-color 0.5s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .arrow {
+            font-size: 2.5rem;
+            line-height: 1;
+            color: #6b7280;
+        }
+        .calc-box {
+            background-color: #1f2937;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            word-wrap: break-word;
+            text-align: center;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #374151;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .final-secret-box {
+            border: 2px dashed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">Diffie-Hellman Key Exchange</h1>
+            <p class="text-lg text-gray-400">A visual simulator of establishing a shared secret.</p>
+        </header>
+
+        <!-- Public Parameters -->
+        <section class="bg-gray-800 p-6 rounded-xl mb-8 max-w-3xl mx-auto">
+            <h2 class="text-2xl font-semibold text-center mb-4 text-white">1. Publicly Agreed Numbers</h2>
+            <p class="text-center text-gray-400 mb-6">Alice and Bob agree on a prime modulus (p) and a generator (g). These are public and can be seen by anyone, including eavesdroppers.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="prime" class="block mb-2 font-medium">Prime Modulus (p)</label>
+                    <input type="number" id="prime" value="997" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="generator" class="block mb-2 font-medium">Generator (g)</label>
+                    <input type="number" id="generator" value="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p class="text-sm text-gray-500">The "Common Paint"</p>
+                <div id="common-color" class="color-box w-24 h-12 mx-auto mt-2"></div>
+            </div>
+        </section>
+
+        <!-- Main Exchange Visualization -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            
+            <!-- Alice's Side -->
+            <div class="bg-gray-800 p-6 rounded-xl space-y-4">
+                <h3 class="text-2xl font-bold text-center text-blue-400">Alice</h3>
+                
+                <div class="text-center">
+                    <h4 class="font-semibold mb-2">2. Alice's Private Key (a)</h4>
+                    <p class="text-sm text-gray-400 mb-2">Alice chooses a secret number 'a'. Only she knows this.</p>
+                    <div id="alice-private-color" class="color-box"></div>
+                    <input type="range" id="alice-secret" min="2" max="100" value="15" class="w-full mt-2">
+                    <p class="mt-1 font-mono text-lg">a = <span id="alice-secret-val">15</span></p>
+                </div>
+                
+                <div class="text-center">
+                    <h4 class="font-semibold mb-2">3. Alice's Public Key (A)</h4>
+                    <p class="text-sm text-gray-400 mb-2">She mixes her secret color with the common paint and sends it publicly to Bob.</p>
+                    <div id="alice-public-color" class="color-box"></div>
+                    <div class="calc-box mt-2">A = g<sup>a</sup> mod p<br><span id="alice-public-calc"></span></div>
+                </div>
+
+                <div class="text-center">
+                    <h4 class="font-semibold mb-2">5. The Shared Secret</h4>
+                    <p class="text-sm text-gray-400 mb-2">Alice mixes her secret color with Bob's public key to get the final secret.</p>
+                    <div id="alice-secret-color" class="color-box final-secret-box border-blue-400"></div>
+                    <div class="calc-box mt-2">Secret = B<sup>a</sup> mod p<br><span id="alice-final-calc"></span></div>
+                </div>
+            </div>
+
+            <!-- Public Channel -->
+            <div class="text-center self-center space-y-16 hidden md:block">
+                <div class="space-y-2">
+                    <p class="font-semibold">Alice sends A</p>
+                    <div class="arrow text-blue-400">→</div>
+                    <p class="font-mono text-xl" id="A-val-arrow"></p>
+                </div>
+                <div class="space-y-2">
+                     <p class="font-semibold">Bob sends B</p>
+                    <div class="arrow text-green-400">←</div>
+                    <p class="font-mono text-xl" id="B-val-arrow"></p>
+                </div>
+            </div>
+            
+            <!-- Bob's Side -->
+            <div class="bg-gray-800 p-6 rounded-xl space-y-4">
+                <h3 class="text-2xl font-bold text-center text-green-400">Bob</h3>
+                
+                <div class="text-center">
+                    <h4 class="font-semibold mb-2">2. Bob's Private Key (b)</h4>
+                    <p class="text-sm text-gray-400 mb-2">Bob chooses a secret number 'b'. Only he knows this.</p>
+                    <div id="bob-private-color" class="color-box"></div>
+                    <input type="range" id="bob-secret" min="2" max="100" value="23" class="w-full mt-2">
+                    <p class="mt-1 font-mono text-lg">b = <span id="bob-secret-val">23</span></p>
+                </div>
+
+                <div class="text-center">
+                    <h4 class="font-semibold mb-2">4. Bob's Public Key (B)</h4>
+                    <p class="text-sm text-gray-400 mb-2">He mixes his secret color with the common paint and sends it publicly to Alice.</p>
+                    <div id="bob-public-color" class="color-box"></div>
+                    <div class="calc-box mt-2">B = g<sup>b</sup> mod p<br><span id="bob-public-calc"></span></div>
+                </div>
+
+                <div class="text-center">
+                    <h4 class="font-semibold mb-2">5. The Shared Secret</h4>
+                    <p class="text-sm text-gray-400 mb-2">Bob mixes his secret color with Alice's public key to get the final secret.</p>
+                    <div id="bob-secret-color" class="color-box final-secret-box border-green-400"></div>
+                    <div class="calc-box mt-2">Secret = A<sup>b</sup> mod p<br><span id="bob-final-calc"></span></div>
+                </div>
+            </div>
+
+        </main>
+        
+        <!-- Result -->
+        <section class="mt-8 text-center">
+             <h2 class="text-2xl font-semibold text-center mb-4 text-white">6. Result</h2>
+             <div id="result" class="bg-gray-800 p-6 rounded-xl max-w-3xl mx-auto transition-all duration-500">
+                <!-- Result content will be injected here -->
+             </div>
+        </section>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const primeInput = document.getElementById('prime');
+        const generatorInput = document.getElementById('generator');
+        const aliceSecretSlider = document.getElementById('alice-secret');
+        const bobSecretSlider = document.getElementById('bob-secret');
+        const aliceSecretVal = document.getElementById('alice-secret-val');
+        const bobSecretVal = document.getElementById('bob-secret-val');
+
+        const commonColorBox = document.getElementById('common-color');
+        const alicePrivateColorBox = document.getElementById('alice-private-color');
+        const bobPrivateColorBox = document.getElementById('bob-private-color');
+        const alicePublicColorBox = document.getElementById('alice-public-color');
+        const bobPublicColorBox = document.getElementById('bob-public-color');
+        const aliceSecretColorBox = document.getElementById('alice-secret-color');
+        const bobSecretColorBox = document.getElementById('bob-secret-color');
+
+        const alicePublicCalc = document.getElementById('alice-public-calc');
+        const bobPublicCalc = document.getElementById('bob-public-calc');
+        const aliceFinalCalc = document.getElementById('alice-final-calc');
+        const bobFinalCalc = document.getElementById('bob-final-calc');
+
+        const aValArrow = document.getElementById('A-val-arrow');
+        const bValArrow = document.getElementById('B-val-arrow');
+        
+        const resultDiv = document.getElementById('result');
+
+        /**
+         * A simple hash function to convert a string to a hex color.
+         * This is purely for visualization.
+         * @param {string} str The string to hash.
+         * @returns {string} A hex color code.
+         */
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            let color = '#';
+            for (let i = 0; i < 3; i++) {
+                const value = (hash >> (i * 8)) & 0xFF;
+                color += ('00' + value.toString(16)).substr(-2);
+            }
+            return color;
+        }
+
+        /**
+         * Calculates (base^exp) % mod using BigInt for safety with large numbers.
+         * @param {bigint} base
+         * @param {bigint} exp
+         * @param {bigint} mod
+         * @returns {bigint}
+         */
+        function power(base, exp, mod) {
+            let res = 1n;
+            base %= mod;
+            while (exp > 0n) {
+                if (exp % 2n === 1n) res = (res * base) % mod;
+                base = (base * base) % mod;
+                exp /= 2n;
+            }
+            return res;
+        }
+
+        function updateSimulation() {
+            // Get values from inputs, using BigInt for calculations
+            const p = BigInt(primeInput.value);
+            const g = BigInt(generatorInput.value);
+            const a = BigInt(aliceSecretSlider.value);
+            const b = BigInt(bobSecretSlider.value);
+
+            // Update slider value displays
+            aliceSecretVal.textContent = a.toString();
+            bobSecretVal.textContent = b.toString();
+
+            // --- Calculations ---
+            // Public keys (A and B)
+            const A = power(g, a, p);
+            const B = power(g, b, p);
+
+            // Shared secrets (calculated by Alice and Bob)
+            const aliceSharedSecret = power(B, a, p);
+            const bobSharedSecret = power(A, b, p);
+
+            // --- Update UI Calculations ---
+            alicePublicCalc.textContent = `${g}^${a} mod ${p} = ${A}`;
+            bobPublicCalc.textContent = `${g}^${b} mod ${p} = ${B}`;
+            
+            aliceFinalCalc.textContent = `${B}^${a} mod ${p} = ${aliceSharedSecret}`;
+            bobFinalCalc.textContent = `${A}^${b} mod ${p} = ${bobSharedSecret}`;
+
+            // Update arrow values
+            aValArrow.textContent = `A = ${A}`;
+            bValArrow.textContent = `B = ${B}`;
+
+            // --- Update Colors ---
+            // The "colors" are just visual representations derived from the numbers.
+            commonColorBox.style.backgroundColor = stringToColor(g.toString());
+            alicePrivateColorBox.style.backgroundColor = stringToColor(a.toString());
+            bobPrivateColorBox.style.backgroundColor = stringToColor(b.toString());
+
+            // "Mixed" public colors
+            alicePublicColorBox.style.backgroundColor = stringToColor(A.toString());
+            bobPublicColorBox.style.backgroundColor = stringToColor(B.toString());
+
+            // Final secret colors
+            const finalSecretColor = stringToColor(aliceSharedSecret.toString());
+            aliceSecretColorBox.style.backgroundColor = finalSecretColor;
+            bobSecretColorBox.style.backgroundColor = finalSecretColor;
+
+            // --- Update Result ---
+            if (aliceSharedSecret === bobSharedSecret) {
+                resultDiv.innerHTML = `
+                    <h3 class="text-xl font-bold text-green-400 mb-2">Success!</h3>
+                    <p class="text-gray-300">Alice and Bob have successfully computed the same secret key.</p>
+                    <div class="font-mono text-2xl mt-4 p-4 bg-gray-900 rounded-lg text-white break-all">${aliceSharedSecret}</div>
+                `;
+                resultDiv.classList.remove('bg-red-800');
+                resultDiv.classList.add('bg-gray-800');
+            } else {
+                // This case should not happen with correct math, but it's good practice
+                resultDiv.innerHTML = `
+                    <h3 class="text-xl font-bold text-red-400">Error!</h3>
+                    <p class="text-gray-300">The secrets do not match. There is an error in the calculation.</p>
+                `;
+                resultDiv.classList.remove('bg-gray-800');
+                resultDiv.classList.add('bg-red-800');
+            }
+        }
+
+        // Event Listeners
+        primeInput.addEventListener('input', updateSimulation);
+        generatorInput.addEventListener('input', updateSimulation);
+        aliceSecretSlider.addEventListener('input', updateSimulation);
+        bobSecretSlider.addEventListener('input', updateSimulation);
+
+        // Initial call to populate the simulation
+        window.onload = updateSimulation;
+    </script>
+</body>
+</html>
